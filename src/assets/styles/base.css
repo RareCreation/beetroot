@@ -1,0 +1,43 @@
+:root {
+    --win-bg: rgba(24, 8, 14, .82);
+    --frame-bg: rgba(28, 10, 18, .55);
+    --frame-line: rgba(255, 120, 130, .08);
+    --title: #ff8c90;
+    --scroll: #c23a44;
+    --term-bg-1: rgba(60, 10, 20, .45);
+    --term-bg-2: rgba(10, 3, 6, .35);
+    --term-bg-3: rgba(12, 4, 8, .35);
+    --term-bg-4: rgba(16, 5, 10, .35);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; background: transparent; overflow: hidden; }
+
+#window {
+    position: fixed;
+    inset: 12px;
+    display: flex;
+    flex-direction: column;
+    background: var(--win-bg);
+    border: 1px solid var(--frame-line);
+    border-radius: 18px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .35);
+    overflow: hidden;
+    backdrop-filter: blur(22px) saturate(160%);
+    transition: background .3s ease, border-color .3s ease;
+}
+body.max #window { inset: 0; border-radius: 0; box-shadow: none; }
+body.max .rz { display: none; }
+
+#frame {
+    flex: 1;
+    min-height: 0;
+    margin: 16px 18px 18px;
+    padding: 12px;
+    border: 1px solid var(--frame-line);
+    border-radius: 10px;
+    background: var(--frame-bg);
+    backdrop-filter: blur(12px) saturate(140%);
+    transition: background .3s ease, border-color .3s ease;
+}

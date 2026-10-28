@@ -1,0 +1,47 @@
+#terminal {
+    height: 100%;
+    padding: 6px 0 4px 10px;
+    background:
+            radial-gradient(ellipse 80% 70% at 100% 0%, var(--term-bg-1) 0%, rgba(0, 0, 0, 0) 70%),
+            linear-gradient(160deg, var(--term-bg-2) 0%, var(--term-bg-3) 60%, var(--term-bg-4) 100%);
+    overflow: hidden;
+    border-radius: 8px;
+    backdrop-filter: blur(6px);
+    transition: background .4s ease;
+}
+
+.xterm { height: 100%; }
+.xterm .xterm-viewport,
+.xterm .xterm-screen,
+.xterm .xterm-screen canvas,
+.xterm .xterm-rows {
+    background: transparent !important;
+}
+
+.xterm .xterm-rows .xterm-cursor.xterm-cursor-bar {
+    background-color: #f2f2f7;
+    width: 2px;
+}
+.xterm .xterm-rows .xterm-cursor.xterm-cursor-blink {
+    animation: xterm-cursor-blink 1s step-end infinite;
+}
+@keyframes xterm-cursor-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.xterm-viewport::-webkit-scrollbar { width: 10px; }
+.xterm-viewport::-webkit-scrollbar-track { background: transparent; }
+.xterm-viewport::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--scroll) 45%, transparent);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    transition: background .2s;
+}
+.xterm-viewport::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--scroll) 75%, transparent);
+    background-clip: padding-box;
+}
+
+.xterm-selection div { background-color: rgba(122, 147, 255, .35) !important; }
