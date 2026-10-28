@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' data:">
+  <title>BEETROOT</title>
+  <link rel="stylesheet" href="../../node_modules/@xterm/xterm/css/xterm.css">
+  <link rel="stylesheet" href="styles/base.css">
+  <link rel="stylesheet" href="styles/titlebar.css">
+  <link rel="stylesheet" href="styles/terminal.css">
+  <link rel="stylesheet" href="styles/panels.css">
+  <link rel="stylesheet" href="styles/clipboard.css">
+  <link rel="stylesheet" href="styles/resize.css">
+  <script src="../renderer/theme-bootstrap.js"></script>
+</head>
+<body>
+<div id="window">
+  <header id="titlebar">
+    <div class="dots">
+      <button id="btn-close" class="dot red" aria-label="Close"></button>
+      <button id="btn-min" class="dot yellow" aria-label="Minimize"></button>
+      <button id="btn-max" class="dot green" aria-label="Maximize"></button>
+    </div>
+    <div id="title">BEETROOT</div>
+    <div class="actions">
+      <button id="btn-clipboard" class="pin" aria-label="Clipboard"></button>
+      <button id="btn-settings" class="pin" aria-label="Settings"></button>
+    </div>
+  </header>
+  <section id="frame">
+    <main id="terminal"></main>
+  </section>
+</div>
+
+<div id="clipboard-panel" class="hidden">
+  <div class="settings-head">
+    <span>Clipboard</span>
+    <button id="clipboard-close" aria-label="Close"></button>
+  </div>
+  <div class="settings-body">
+    <div class="settings-label">Pinned</div>
+    <div id="clipboard-pinned" class="clipboard-list"></div>
+    <div class="settings-label" style="margin-top:20px;">Last</div>
+    <div id="clipboard-last" class="clipboard-list"></div>
+  </div>
+</div>
+
+<div id="settings" class="hidden">
+  <div class="settings-head">
+    <span>Settings</span>
+    <button id="settings-close" aria-label="Close"></button>
+  </div>
+  <div class="settings-body">
+    <div class="settings-label">Theme</div>
+    <div id="theme-list" class="theme-list"></div>
+  </div>
+</div>
+
+<div class="rz n" data-dir="n"></div><div class="rz s" data-dir="s"></div>
+<div class="rz e" data-dir="e"></div><div class="rz w" data-dir="w"></div>
+<div class="rz ne" data-dir="ne"></div><div class="rz nw" data-dir="nw"></div>
+<div class="rz se" data-dir="se"></div><div class="rz sw" data-dir="sw"></div>
+
+<script src="../../node_modules/@xterm/xterm/lib/xterm.js"></script>
+<script src="../../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+<script type="module" src="../renderer/renderer.js"></script>
+</body>
+</html>

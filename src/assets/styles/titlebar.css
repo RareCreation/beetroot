@@ -1,0 +1,63 @@
+#titlebar {
+    position: relative;
+    height: 58px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 22px;
+    border-bottom: 1px solid var(--frame-line);
+    -webkit-app-region: drag;
+    user-select: none;
+    transition: border-color .3s ease;
+}
+
+#title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font: 700 15px "JetBrains Mono", "Cascadia Mono", Consolas, monospace;
+    letter-spacing: .38em;
+    padding-left: .38em;
+    color: var(--title);
+    pointer-events: none;
+    transition: color .3s ease, text-shadow .3s ease;
+    animation: titleGlow 4s ease-in-out infinite;
+}
+@keyframes titleGlow {
+    0%, 100% { text-shadow: 0 0 0 rgba(0, 0, 0, 0); }
+    50% { text-shadow: 0 0 10px var(--title); }
+}
+
+.dots { display: flex; gap: 11px; -webkit-app-region: no-drag; }
+.dot, .pin {
+    width: 12px; height: 12px;
+    border: 0; border-radius: 50%;
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+    transition: filter .2s, transform .25s cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s, background .3s;
+}
+.dot:hover { filter: brightness(1.25); transform: scale(1.18); }
+.dot:active { transform: scale(.9); }
+.red { background: #ff5f57; }
+.red:hover { box-shadow: 0 0 10px rgba(255, 95, 87, .7); }
+.yellow { background: #febc2e; }
+.yellow:hover { box-shadow: 0 0 10px rgba(254, 188, 46, .7); }
+.green { background: #28c840; }
+.green:hover { box-shadow: 0 0 10px rgba(40, 200, 64, .7); }
+
+.actions {
+    display: flex;
+    gap: 11px;
+    -webkit-app-region: no-drag;
+}
+
+.pin { background: rgba(255, 255, 255, .15); }
+.pin:hover { transform: scale(1.15) rotate(45deg); }
+.pin:active { transform: scale(.9) rotate(45deg); }
+
+#btn-clipboard { background: #5ad6c0; }
+#btn-clipboard:hover { background: #8affe0; }
+
+#btn-settings { background: var(--title); }
+#btn-settings:hover { background: #fff; }

@@ -1,0 +1,36 @@
+{
+  "name": "beetroot",
+  "version": "1.0.0",
+  "description": "Beetroot terminal",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "rebuild": "electron-rebuild -f -w node-pty",
+    "postinstall": "electron-rebuild -f -w node-pty",
+    "dist": "electron-builder --win"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0",
+    "node-pty": "^1.0.0"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^3.6.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.rare.beetroot",
+    "productName": "Beetroot",
+    "npmRebuild": false,
+    "files": [
+      "src/**/*",
+      "node_modules/**/*"
+    ],
+    "asarUnpack": ["node_modules/node-pty/**"],
+    "win": {
+      "target": "nsis",
+      "icon": "src/assets/icon.ico"
+    }
+  }
+}
