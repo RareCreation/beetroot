@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="styles/panels.css">
   <link rel="stylesheet" href="styles/clipboard.css">
   <link rel="stylesheet" href="styles/resize.css">
+  <link rel="stylesheet" href="styles/search.css">
   <script src="../renderer/theme-bootstrap.js"></script>
 </head>
 <body>
@@ -23,13 +24,44 @@
     </div>
     <div id="title">BEETROOT</div>
     <div class="actions">
+      <button id="btn-sessions" class="pin sessions-btn" aria-label="Background Sessions" title="Background Sessions">
+        <span id="sessions-badge" class="badge hidden">0</span>
+      </button>
       <button id="btn-clipboard" class="pin" aria-label="Clipboard"></button>
       <button id="btn-settings" class="pin" aria-label="Settings"></button>
     </div>
   </header>
+
+  <div id="tabs-bar">
+    <div id="tabs-list"></div>
+    <button id="btn-new-tab" aria-label="New Tab">+</button>
+  </div>
+
   <section id="frame">
-    <main id="terminal"></main>
+    <div id="terminals-container"></div>
+    <div id="empty-state" class="hidden">
+      <div class="empty-title">No terminals</div>
+      <div class="empty-sub">Press + to create a new one</div>
+    </div>
+    <div id="search-bar" class="hidden">
+      <input type="text" id="search-input" placeholder="Find..." autocomplete="off" spellcheck="false">
+      <span id="search-results">0/0</span>
+      <button id="search-prev" aria-label="Previous">↑</button>
+      <button id="search-next" aria-label="Next">↓</button>
+      <button id="search-close" aria-label="Close">×</button>
+    </div>
   </section>
+</div>
+
+<div id="sessions-panel" class="hidden">
+  <div class="settings-head">
+    <span>Sessions</span>
+    <button id="sessions-close" aria-label="Close"></button>
+  </div>
+  <div class="settings-body">
+    <div class="settings-label">Background Processes</div>
+    <div id="sessions-list" class="clipboard-list"></div>
+  </div>
 </div>
 
 <div id="clipboard-panel" class="hidden">
@@ -53,8 +85,17 @@
   <div class="settings-body">
     <div class="settings-label">Theme</div>
     <div id="theme-list" class="theme-list"></div>
+    <div id="custom-palette" class="custom-palette hidden">
+      <div class="settings-label" style="margin-top:16px;">Custom Color</div>
+      <div class="palette-row">
+        <label>Base</label>
+        <input type="color" id="cp-base">
+      </div>
+    </div>
   </div>
 </div>
+
+<div id="toast-container" class="toast-container"></div>
 
 <div class="rz n" data-dir="n"></div><div class="rz s" data-dir="s"></div>
 <div class="rz e" data-dir="e"></div><div class="rz w" data-dir="w"></div>
@@ -63,6 +104,7 @@
 
 <script src="../../node_modules/@xterm/xterm/lib/xterm.js"></script>
 <script src="../../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+<script src="../../node_modules/@xterm/addon-search/lib/addon-search.js"></script>
 <script type="module" src="../renderer/renderer.js"></script>
 </body>
 </html>

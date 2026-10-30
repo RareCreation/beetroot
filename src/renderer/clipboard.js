@@ -4,7 +4,7 @@ let pinnedItems = [];
 let lastClipText = '';
 let pinnedEl = null;
 let lastEl = null;
-let termRef = null;
+let getTermRef = null;
 
 function load() {
     try {
@@ -37,9 +37,11 @@ function remove(text) {
 }
 
 function insertToTerm(text) {
-    if (!text || !termRef) return;
-    termRef.focus();
-    termRef.paste(text);
+    if (!text || !getTermRef) return;
+    const term = getTermRef();
+    if (!term) return;
+    term.focus();
+    term.paste(text);
 }
 
 function makeItem(text, { pinned, onTogglePin }) {
@@ -108,8 +110,8 @@ async function refreshLast() {
     renderLast();
 }
 
-function init(term) {
-    termRef = term;
+function init(termGetter) {
+    getTermRef = termGetter;
     pinnedEl = document.getElementById('clipboard-pinned');
     lastEl = document.getElementById('clipboard-last');
     load();

@@ -1,14 +1,11 @@
-export function createTerminal(theme) {
-    if (typeof Terminal === 'undefined') {
-        document.getElementById('terminal').textContent =
-            'ERROR: xterm.js not loaded. Check node_modules/@xterm/xterm/lib/xterm.js';
-        throw new Error('xterm.js not loaded');
-    }
-    if (typeof FitAddon === 'undefined') {
-        document.getElementById('terminal').textContent =
-            'ERROR: addon-fit not loaded. Check node_modules/@xterm/addon-fit/lib/addon-fit.js';
-        throw new Error('addon-fit not loaded');
-    }
+export function createTerminalInstance(theme) {
+    if (typeof Terminal === 'undefined') throw new Error('xterm.js not loaded');
+    if (typeof FitAddon === 'undefined') throw new Error('addon-fit not loaded');
+    if (typeof SearchAddon === 'undefined') throw new Error('addon-search not loaded');
+
+    const container = document.createElement('div');
+    container.className = 'terminal-instance';
+    document.getElementById('terminals-container').appendChild(container);
 
     const term = new Terminal({
         fontSize: 15,
@@ -22,22 +19,16 @@ export function createTerminal(theme) {
 
     const fit = new FitAddon.FitAddon();
     term.loadAddon(fit);
-    term.open(document.getElementById('terminal'));
 
-    window.__term = term;
+    const searchAddon = new SearchAddon.SearchAddon();
+    term.loadAddon(searchAddon);
 
-    function doFit() {
-        try {
-            fit.fit();
-            window.api.resize(term.cols, term.rows);
-        } catch {}
-    }
-    new ResizeObserver(doFit).observe(document.getElementById('terminal'));
+    term.open(container);
 
     let wheelAcc = 0;
     const WHEEL_STEP = 120;
     const WHEEL_LINES = 0.5;
-    document.getElementById('terminal').addEventListener('wheel', (e) => {
+    container.addEventListener('wheel', (e) => {
         if (e.deltaY === 0) return;
         e.preventDefault();
         wheelAcc += e.deltaY;
@@ -48,10 +39,22 @@ export function createTerminal(theme) {
         }
     }, { passive: false });
 
-    return { term, doFit };
+    function doFit() {
+        try {
+            fit.fit();
+            window.api.resize(term.cols, term.rows);
+        } catch {}
+    }
+
+    const observer = new ResizeObserver(() => {
+        if (container.classList.contains('active')) doFit();
+    });
+    observer.observe(container);
+
+    return { term, doFit, container, observer, searchAddon };
 }
 
-export function bindInput(term) {
+export function bindInput(term, ptyId) {
     let lineMode = false;
     let lineBuf = '';
     let prevCh = '';
@@ -61,14 +64,14 @@ export function bindInput(term) {
         for (const ch of d) {
             if (ch === '\r' || (ch === '\n' && prevCh !== '\r')) {
                 term.write('\r\n');
-                window.api.input(lineBuf + '\r\n');
+                window.api.input(ptyId, lineBuf + '\r\n');
                 lineBuf = '';
             } else if (ch === '\x7f' || ch === '\b') {
                 if (lineBuf) { lineBuf = lineBuf.slice(0, -1); term.write('\b \b'); }
             } else if (ch === '\x03') {
                 term.write('^C\r\n');
                 lineBuf = '';
-                window.api.input('\r\n');
+                window.api.input(ptyId, '\r\n');
             } else if (ch >= ' ') {
                 lineBuf += ch;
                 term.write(ch);
@@ -77,7 +80,11 @@ export function bindInput(term) {
         }
     }
 
-    term.onData((d) => (lineMode ? lineInput(d) : window.api.input(d)));
-    window.api.onData((d) => term.write(d));
-    window.api.onMode((m) => { lineMode = m === 'line'; });
+    term.onData((d) => (lineMode ? lineInput(d) : window.api.input(ptyId, d)));
+    window.api.onData((id, d) => {
+        if (id === ptyId) term.write(d);
+    });
+    window.api.onMode((id, m) => {
+        if (id === ptyId) lineMode = m === 'line';
+    });
 }

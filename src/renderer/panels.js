@@ -7,6 +7,7 @@ function init() {
         clipboardPanel,
         openSettings() {
             clipboardPanel.classList.add('hidden');
+            document.getElementById('sessions-panel').classList.add('hidden');
             settingsPanel.classList.toggle('hidden');
         },
         closeSettings() {
@@ -14,6 +15,7 @@ function init() {
         },
         toggleClipboard() {
             settingsPanel.classList.add('hidden');
+            document.getElementById('sessions-panel').classList.add('hidden');
             const wasHidden = clipboardPanel.classList.contains('hidden');
             clipboardPanel.classList.toggle('hidden');
             return wasHidden;

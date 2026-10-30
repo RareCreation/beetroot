@@ -1,7 +1,7 @@
 const os = require('os');
 const cp = require('child_process');
 const { StringDecoder } = require('string_decoder');
-const { sendToWin } = require('./window');
+const { sendToWindow, getAllWindows } = require('./window');
 
 let pty = null;
 let ptyError = null;
@@ -11,8 +11,9 @@ const IS_WIN = process.platform === 'win32';
 const SHELL = process.env.WT_SHELL || (IS_WIN ? 'cmd.exe' : 'bash');
 const IS_CMD = /(^|[\\/])cmd(\.exe)?$/i.test(SHELL);
 
-let term = null;
-let fb = null;
+const instances = new Map();
+const detachedSessions = new Map();
+let activeId = null;
 
 function buildPrompt() {
     const user = (os.userInfo().username || 'user').replace(/%/g, '');
@@ -37,38 +38,64 @@ function cleanEnv() {
     return env;
 }
 
-function info(msg, color = '33') {
-    console.log('[beetroot]', msg);
-    sendToWin('pty:data', `\r\n\x1b[${color}m[bt] ${msg}\x1b[0m\r\n`);
+function sendToTarget(id, ch, ...a) {
+    const inst = instances.get(id);
+    if (!inst) return;
+    if (inst.targetWin && !inst.targetWin.isDestroyed()) {
+        sendToWindow(inst.targetWin, ch, ...a);
+    } else if (getAllWindows()[0]) {
+        sendToWindow(getAllWindows()[0], ch, ...a);
+    }
 }
 
-function startFallback(reason) {
-    info(`${reason}. Fallback mode: ${SHELL} without pty.`);
-    sendToWin('pty:mode', 'line');
+function info(id, msg, color = '33') {
+    console.log('[beetroot]', msg);
+    sendToTarget(id, 'pty:data', id, `\r\n\x1b[${color}m[bt] ${msg}\x1b[0m\r\n`);
+}
+
+function startFallback(id, reason) {
+    info(id, `${reason}. Fallback mode: ${SHELL} without pty.`);
+    sendToTarget(id, 'pty:mode', id, 'line');
     const args = IS_CMD ? ['/K', 'chcp 65001>nul'] : [];
     try {
-        fb = cp.spawn(SHELL, args, { cwd: os.homedir(), env: cleanEnv(), windowsHide: true });
+        const fb = cp.spawn(SHELL, args, { cwd: os.homedir(), env: cleanEnv(), windowsHide: true });
+        const pipe = (stream) => {
+            const dec = new StringDecoder('utf8');
+            stream.on('data', (d) => {
+                if (!detachedSessions.has(id)) {
+                    sendToTarget(id, 'pty:data', id, dec.write(d).replace(/\r?\n/g, '\r\n'));
+                }
+            });
+        };
+        pipe(fb.stdout);
+        pipe(fb.stderr);
+        fb.on('error', (e) => info(id, `${SHELL} error: ${e.message}`, '31'));
+        fb.on('exit', () => {
+            instances.delete(id);
+            detachedSessions.delete(id);
+        });
+
+        instances.set(id, { type: 'fallback', proc: fb, targetWin: getAllWindows()[0] || null });
     } catch (e) {
-        return info(`failed to start ${SHELL}: ${e.message}`, '31');
+        info(id, `failed to start ${SHELL}: ${e.message}`, '31');
     }
-    const pipe = (stream) => {
-        const dec = new StringDecoder('utf8');
-        stream.on('data', (d) => sendToWin('pty:data', dec.write(d).replace(/\r?\n/g, '\r\n')));
-    };
-    pipe(fb.stdout);
-    pipe(fb.stderr);
-    fb.on('error', (e) => info(`${SHELL} error: ${e.message}`, '31'));
-    fb.on('exit', () => process.exit(0));
 }
 
-function start(cols, rows) {
-    if (process.env.WT_FORCE_FALLBACK) return startFallback('forced (WT_FORCE_FALLBACK)');
-    if (!pty) return startFallback(`node-pty failed: ${ptyError && ptyError.message}`);
+function create(id, cols, rows) {
+    if (instances.has(id) || detachedSessions.has(id)) return;
+    if (process.env.WT_FORCE_FALLBACK) {
+        startFallback(id, 'forced (WT_FORCE_FALLBACK)');
+        return;
+    }
+    if (!pty) {
+        startFallback(id, `node-pty failed: ${ptyError && ptyError.message}`);
+        return;
+    }
 
     const args = IS_CMD ? ['/K', 'chcp 65001>nul && cls'] : [];
 
     try {
-        term = pty.spawn(SHELL, args, {
+        const term = pty.spawn(SHELL, args, {
             name: 'xterm-256color',
             cols,
             rows,
@@ -76,44 +103,123 @@ function start(cols, rows) {
             env: cleanEnv(),
             useConpty: true
         });
+
+        const t0 = Date.now();
+
+        term.onData((d) => {
+            if (!detachedSessions.has(id)) {
+                sendToTarget(id, 'pty:data', id, d);
+            }
+        });
+
+        term.onExit(({ exitCode }) => {
+            const inst = instances.get(id);
+            if (inst && inst.type === 'fallback') return;
+            if (Date.now() - t0 < 3000) info(id, `${SHELL} exited early with code ${exitCode}`, '31');
+            instances.delete(id);
+            detachedSessions.delete(id);
+        });
+
+        instances.set(id, { type: 'pty', term, targetWin: getAllWindows()[0] || null });
+        activeId = id;
     } catch (err) {
-        return startFallback(`ConPTY start failed: ${err.message}`);
+        startFallback(id, `ConPTY start failed: ${err.message}`);
     }
-
-    const t0 = Date.now();
-    let got = false;
-
-    term.onData((d) => {
-        got = true;
-        sendToWin('pty:data', d);
-    });
-
-    term.onExit(({ exitCode }) => {
-        if (fb) return;
-        if (Date.now() - t0 < 3000) return info(`${SHELL} exited early with code ${exitCode}`, '31');
-        process.exit(0);
-    });
-
-    setTimeout(() => {
-        if (got || fb) return;
-        try { term.kill(); } catch {}
-        term = null;
-        startFallback('ConPTY returned no data within 4s');
-    }, 4000);
 }
 
-function input(d) {
-    if (fb) { try { fb.stdin.write(d); } catch {} }
-    else if (term) term.write(d);
+function detach(id, title) {
+    const inst = instances.get(id);
+    if (!inst) return false;
+    detachedSessions.set(id, { inst, title: title || 'Restored Session' });
+    inst.targetWin = null;
+    instances.delete(id);
+    return true;
 }
 
-function resize(cols, rows) {
-    try { term && term.resize(cols, rows); } catch {}
+function attach(id, targetWin) {
+    const data = detachedSessions.get(id);
+    if (!data) {
+        console.warn('[PTY] attach: not in detached', id);
+        return false;
+    }
+    const inst = data.inst;
+    const title = data.title || 'Restored Session';
+
+    inst.targetWin = targetWin;
+    detachedSessions.delete(id);
+    instances.set(id, inst);
+    sendToWindow(targetWin, 'pty:adopt', { ptyId: id, title });
+    console.log('[PTY] attach OK', id, 'detached remaining=', detachedSessions.size);
+    return true;
 }
 
-function kill() {
-    try { term && term.kill(); } catch {}
-    try { fb && fb.kill(); } catch {}
+function getDetachedSessions() {
+    return Array.from(detachedSessions.entries()).map(([id, data]) => ({
+        id,
+        title: data.title
+    }));
 }
 
-module.exports = { start, input, resize, kill };
+function setTargetWindow(id, win) {
+    const inst = instances.get(id);
+    if (inst) inst.targetWin = win;
+}
+
+function reattach(id) {
+    const inst = instances.get(id);
+    if (!inst) return;
+    if (inst.type === 'pty') {
+        try { inst.term.resize(80, 24); } catch {}
+    }
+}
+
+function exists(id) {
+    return instances.has(id) || detachedSessions.has(id);
+}
+
+function kill(id) {
+    const data = instances.get(id) || detachedSessions.get(id);
+    if (!data) return;
+    const inst = data.inst || data;
+    if (inst.type === 'pty') {
+        try { inst.term.kill(); } catch {}
+    } else if (inst.type === 'fallback') {
+        try { inst.proc.kill(); } catch {}
+    }
+    instances.delete(id);
+    detachedSessions.delete(id);
+}
+
+function input(id, d) {
+    const data = instances.get(id) || detachedSessions.get(id);
+    if (!data) return;
+    const inst = data.inst || data;
+    if (inst.type === 'fallback') {
+        try { inst.proc.stdin.write(d); } catch {}
+    } else if (inst.type === 'pty') {
+        inst.term.write(d);
+    }
+}
+
+function resizeActive(cols, rows) {
+    if (!activeId) return;
+    const data = instances.get(activeId) || detachedSessions.get(activeId);
+    if (!data) return;
+    const inst = data.inst || data;
+    if (inst.type === 'pty') {
+        try { inst.term.resize(cols, rows); } catch {}
+    }
+}
+
+function setActive(id) { activeId = id; }
+
+function killAll() {
+    for (const [id] of instances) kill(id);
+    for (const [id] of detachedSessions) kill(id);
+}
+
+module.exports = {
+    create, kill, input, resizeActive, setActive, killAll,
+    setTargetWindow, reattach, exists,
+    detach, attach, getDetachedSessions
+};
