@@ -1,98 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' data:">
-  <title>BEETROOT</title>
-  <link rel="stylesheet" href="../../node_modules/@xterm/xterm/css/xterm.css">
-  <link rel="stylesheet" href="styles/base.css">
-  <link rel="stylesheet" href="styles/titlebar.css">
-  <link rel="stylesheet" href="styles/terminal.css">
-  <link rel="stylesheet" href="styles/panels.css">
-  <link rel="stylesheet" href="styles/clipboard.css">
-  <link rel="stylesheet" href="styles/resize.css">
-  <link rel="stylesheet" href="styles/search.css">
-  <script src="../renderer/theme-bootstrap.js"></script>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' data:">
+    <title>BEETROOT</title>
+    <link rel="stylesheet" href="../../node_modules/@xterm/xterm/css/xterm.css">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/titlebar.css">
+    <link rel="stylesheet" href="styles/terminal.css">
+    <link rel="stylesheet" href="styles/panels.css">
+    <link rel="stylesheet" href="styles/clipboard.css">
+    <link rel="stylesheet" href="styles/resize.css">
+    <link rel="stylesheet" href="styles/search.css">
+    <script src="../renderer/theme/ThemeBootstrap.js"></script>
 </head>
 <body>
 <div id="window">
-  <header id="titlebar">
-    <div class="dots">
-      <button id="btn-close" class="dot red" aria-label="Close"></button>
-      <button id="btn-min" class="dot yellow" aria-label="Minimize"></button>
-      <button id="btn-max" class="dot green" aria-label="Maximize"></button>
-    </div>
-    <div id="title">BEETROOT</div>
-    <div class="actions">
-      <button id="btn-sessions" class="pin sessions-btn" aria-label="Background Sessions" title="Background Sessions">
-        <span id="sessions-badge" class="badge hidden">0</span>
-      </button>
-      <button id="btn-clipboard" class="pin" aria-label="Clipboard"></button>
-      <button id="btn-settings" class="pin" aria-label="Settings"></button>
-    </div>
-  </header>
+    <header id="titlebar">
+        <div class="dots">
+            <button id="btn-close" class="dot red" aria-label="Close"></button>
+            <button id="btn-min" class="dot yellow" aria-label="Minimize"></button>
+            <button id="btn-max" class="dot green" aria-label="Maximize"></button>
+        </div>
+        <div id="title">BEETROOT</div>
+        <div class="actions">
+            <button id="btn-sessions" class="pin sessions-btn" aria-label="Background Sessions" title="Background Sessions">
+                <span id="sessions-badge" class="badge hidden">0</span>
+            </button>
+            <button id="btn-clipboard" class="pin" aria-label="Clipboard"></button>
+            <button id="btn-settings" class="pin" aria-label="Settings"></button>
+        </div>
+    </header>
 
-  <div id="tabs-bar">
-    <div id="tabs-list"></div>
-    <button id="btn-new-tab" aria-label="New Tab">+</button>
-  </div>
+    <div id="tabs-bar">
+        <div id="tabs-list"></div>
+        <button id="btn-new-tab" aria-label="New Tab">+</button>
+    </div>
 
-  <section id="frame">
-    <div id="terminals-container"></div>
-    <div id="empty-state" class="hidden">
-      <div class="empty-title">No terminals</div>
-      <div class="empty-sub">Press + to create a new one</div>
-    </div>
-    <div id="search-bar" class="hidden">
-      <input type="text" id="search-input" placeholder="Find..." autocomplete="off" spellcheck="false">
-      <span id="search-results">0/0</span>
-      <button id="search-prev" aria-label="Previous">↑</button>
-      <button id="search-next" aria-label="Next">↓</button>
-      <button id="search-close" aria-label="Close">×</button>
-    </div>
-  </section>
+    <section id="frame">
+        <div id="terminals-container"></div>
+        <div id="empty-state" class="hidden">
+            <div class="empty-title">No terminals</div>
+            <div class="empty-sub">Press + to create a new one</div>
+        </div>
+        <div id="search-bar" class="hidden">
+            <input type="text" id="search-input" placeholder="Find..." autocomplete="off" spellcheck="false">
+            <span id="search-results">0/0</span>
+            <button id="search-prev" aria-label="Previous">↑</button>
+            <button id="search-next" aria-label="Next">↓</button>
+            <button id="search-close" aria-label="Close">×</button>
+        </div>
+    </section>
 </div>
 
 <div id="sessions-panel" class="hidden">
-  <div class="settings-head">
-    <span>Sessions</span>
-    <button id="sessions-close" aria-label="Close"></button>
-  </div>
-  <div class="settings-body">
-    <div class="settings-label">Background Processes</div>
-    <div id="sessions-list" class="clipboard-list"></div>
-  </div>
+    <div class="settings-head">
+        <span>Sessions</span>
+        <button id="sessions-close" aria-label="Close"></button>
+    </div>
+    <div class="settings-body">
+        <div class="settings-label">Background Processes</div>
+        <div id="sessions-list" class="clipboard-list"></div>
+    </div>
 </div>
 
 <div id="clipboard-panel" class="hidden">
-  <div class="settings-head">
-    <span>Clipboard</span>
-    <button id="clipboard-close" aria-label="Close"></button>
-  </div>
-  <div class="settings-body">
-    <div class="settings-label">Pinned</div>
-    <div id="clipboard-pinned" class="clipboard-list"></div>
-    <div class="settings-label" style="margin-top:20px;">Last</div>
-    <div id="clipboard-last" class="clipboard-list"></div>
-  </div>
+    <div class="settings-head">
+        <span>Clipboard</span>
+        <button id="clipboard-close" aria-label="Close"></button>
+    </div>
+    <div class="settings-body">
+        <div class="settings-label">Pinned</div>
+        <div id="clipboard-pinned" class="clipboard-list"></div>
+        <div class="settings-label" style="margin-top:20px;">Last</div>
+        <div id="clipboard-last" class="clipboard-list"></div>
+    </div>
 </div>
 
 <div id="settings" class="hidden">
-  <div class="settings-head">
-    <span>Settings</span>
-    <button id="settings-close" aria-label="Close"></button>
-  </div>
-  <div class="settings-body">
-    <div class="settings-label">Theme</div>
-    <div id="theme-list" class="theme-list"></div>
-    <div id="custom-palette" class="custom-palette hidden">
-      <div class="settings-label" style="margin-top:16px;">Custom Color</div>
-      <div class="palette-row">
-        <label>Base</label>
-        <input type="color" id="cp-base">
-      </div>
+    <div class="settings-head">
+        <span>Settings</span>
+        <button id="settings-close" aria-label="Close"></button>
     </div>
-  </div>
+    <div class="settings-body">
+        <div class="settings-label">Theme</div>
+        <div id="theme-list" class="theme-list"></div>
+        <div id="custom-palette" class="custom-palette hidden">
+            <div class="settings-label" style="margin-top:16px;">Custom Color</div>
+            <div class="palette-row">
+                <label>Base</label>
+                <input type="color" id="cp-base">
+            </div>
+        </div>
+    </div>
 </div>
 
 <div id="toast-container" class="toast-container"></div>
@@ -105,6 +105,6 @@
 <script src="../../node_modules/@xterm/xterm/lib/xterm.js"></script>
 <script src="../../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
 <script src="../../node_modules/@xterm/addon-search/lib/addon-search.js"></script>
-<script type="module" src="../renderer/renderer.js"></script>
+<script type="module" src="../renderer/bootstrap/RendererEntryPoint.js"></script>
 </body>
 </html>
