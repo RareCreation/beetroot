@@ -1,16 +1,20 @@
 {
   "name": "beetroot",
   "version": "1.0.0",
+  "private": true,
+  "author": "RARE",
   "description": "Beetroot terminal",
-  "main": "src/main/main.js",
+  "main": "src/main/MainEntryPoint.js",
   "scripts": {
     "start": "electron .",
     "rebuild": "electron-rebuild -f -w node-pty",
     "postinstall": "electron-rebuild -f -w node-pty",
-    "dist": "electron-builder --win"
+    "dist": "electron-builder --win",
+    "dist:dir": "electron-builder --win --dir"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",
+    "@xterm/addon-search": "^0.15.0",
     "@xterm/xterm": "^5.5.0",
     "node-pty": "^1.0.0"
   },
@@ -22,15 +26,29 @@
   "build": {
     "appId": "com.rare.beetroot",
     "productName": "Beetroot",
+    "copyright": "Copyright © 2026 RARE",
     "npmRebuild": false,
+    "directories": {
+      "output": "dist",
+      "buildResources": "src/assets"
+    },
     "files": [
       "src/**/*",
       "node_modules/**/*"
     ],
-    "asarUnpack": ["node_modules/node-pty/**"],
+    "asarUnpack": [
+      "node_modules/node-pty/**"
+    ],
     "win": {
       "target": "nsis",
       "icon": "src/assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Beetroot"
     }
   }
 }

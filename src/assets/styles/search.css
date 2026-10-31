@@ -1,0 +1,95 @@
+#search-bar {
+    position: absolute;
+    top: 12px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--win-bg);
+    border: 1px solid var(--frame-line);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .55);
+    backdrop-filter: blur(24px) saturate(160%);
+    z-index: 50;
+    transform-origin: top right;
+    transition: opacity .18s ease, transform .18s cubic-bezier(.34, 1.56, .64, 1), visibility .18s, background .3s ease, border-color .3s ease;
+}
+#search-bar.hidden {
+    opacity: 0;
+    transform: scale(.9) translateY(-6px);
+    visibility: hidden;
+    pointer-events: none;
+}
+#search-bar:not(.hidden) {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#search-input {
+    width: 200px;
+    height: 26px;
+    padding: 0 10px;
+    border: 1px solid var(--frame-line);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, .04);
+    color: #e6e6f0;
+    font: 500 12px "Cascadia Mono", Consolas, monospace;
+    outline: none;
+    transition: border-color .2s, background .2s, box-shadow .2s;
+}
+#search-input:focus {
+    border-color: var(--title);
+    background: rgba(255, 255, 255, .07);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--title) 25%, transparent);
+}
+#search-input::placeholder {
+    color: #7b7a94;
+}
+
+#search-results {
+    min-width: 42px;
+    text-align: center;
+    font: 500 11px "Cascadia Mono", Consolas, monospace;
+    color: #7b7a94;
+    user-select: none;
+}
+#search-results.no-results {
+    color: #ff5f57;
+}
+
+#search-prev, #search-next, #search-close {
+    width: 24px;
+    height: 24px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: #7b7a94;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all .2s ease;
+}
+#search-prev:hover, #search-next:hover {
+    background: rgba(255, 255, 255, .1);
+    color: var(--title);
+    border-color: var(--frame-line);
+}
+#search-prev:active, #search-next:active {
+    transform: scale(.9);
+}
+#search-close:hover {
+    background: rgba(255, 95, 87, .2);
+    color: #ff5f57;
+}
+
+#search-prev:disabled, #search-next:disabled {
+    opacity: .3;
+    cursor: not-allowed;
+}

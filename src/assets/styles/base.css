@@ -12,7 +12,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html, body { height: 100%; background: transparent; overflow: hidden; }
+html, body { height: 100%; background: transparent; }
 
 #window {
     position: fixed;
@@ -30,14 +30,294 @@ html, body { height: 100%; background: transparent; overflow: hidden; }
 body.max #window { inset: 0; border-radius: 0; box-shadow: none; }
 body.max .rz { display: none; }
 
+#tabs-bar {
+    flex: none;
+    height: 34px;
+    display: flex;
+    align-items: flex-end;
+    padding: 0 18px;
+    border-bottom: 1px solid var(--frame-line);
+    background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, .12) 100%);
+    transition: border-color .3s ease, background .3s ease;
+}
+
+#tabs-list {
+    display: flex;
+    gap: 3px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
+    align-items: flex-end;
+    height: 100%;
+    position: relative;
+}
+#tabs-list::-webkit-scrollbar { display: none; }
+#tabs-list.drag-active { overflow: visible; }
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    height: 26px;
+    border-radius: 7px 7px 0 0;
+    background: rgba(255, 255, 255, .03);
+    border: 1px solid transparent;
+    border-bottom: none;
+    font: 500 11px "Cascadia Mono", Consolas, monospace;
+    color: #7b7a94;
+    cursor: pointer;
+    transition: background .2s, color .2s, border-color .2s;
+    white-space: nowrap;
+    position: relative;
+    top: 1px;
+    max-width: 160px;
+    user-select: none;
+    touch-action: none;
+    flex: none;
+}
+.tab:hover {
+    background: rgba(255, 255, 255, .07);
+    color: #c0bcc8;
+}
+.tab.active {
+    background: var(--frame-bg);
+    border-color: var(--frame-line);
+    color: var(--title);
+    backdrop-filter: blur(12px) saturate(140%);
+}
+
+.tab.dragging {
+    position: fixed !important;
+    z-index: 99999;
+    margin: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none;
+    transition: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+    background: transparent !important;
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    visibility: hidden;
+}
+
+.tab-placeholder {
+    flex: none;
+    height: 26px;
+    border-radius: 7px 7px 0 0;
+    border: 1px dashed var(--title);
+    background: rgba(255, 255, 255, .04);
+    animation: placeholderPulse 1.2s ease-in-out infinite;
+    position: relative;
+    top: 1px;
+    transition: width .2s ease, opacity .2s ease;
+}
+@keyframes placeholderPulse {
+    0%, 100% { opacity: .3; transform: scaleY(.85); }
+    50% { opacity: .75; transform: scaleY(1); }
+}
+
+.tab-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+}
+
+.tab-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: all .15s ease;
+    padding: 0;
+}
+.tab:hover .tab-close, .tab.active .tab-close { opacity: .55; }
+.tab-close:hover {
+    background: rgba(255, 255, 255, .15);
+    opacity: 1;
+    color: #ff5f57;
+    transform: rotate(90deg);
+}
+
+#btn-new-tab {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    margin: 0 0 4px 6px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: #7b7a94;
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    transition: all .2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+#btn-new-tab:hover:not(.disabled) {
+    background: rgba(255, 255, 255, .08);
+    color: var(--title);
+    border-color: var(--frame-line);
+    transform: scale(1.1);
+}
+#btn-new-tab:active:not(.disabled) {
+    transform: scale(.9);
+}
+#btn-new-tab.disabled {
+    opacity: .3;
+    cursor: not-allowed;
+}
+
 #frame {
     flex: 1;
     min-height: 0;
-    margin: 16px 18px 18px;
+    margin: 14px 18px 18px;
     padding: 12px;
     border: 1px solid var(--frame-line);
     border-radius: 10px;
     background: var(--frame-bg);
     backdrop-filter: blur(12px) saturate(140%);
     transition: background .3s ease, border-color .3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#terminals-container {
+    position: absolute;
+    inset: 12px;
+}
+
+.terminal-instance {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s ease;
+    border-radius: 8px;
+}
+.terminal-instance.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#empty-state {
+    position: absolute;
+    inset: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    pointer-events: none;
+    transition: opacity .25s ease;
+}
+#empty-state.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+.empty-title {
+    font: 600 15px "Cascadia Mono", Consolas, monospace;
+    letter-spacing: .06em;
+    color: var(--title);
+    opacity: .8;
+}
+.empty-sub {
+    font: 500 12px "Cascadia Mono", Consolas, monospace;
+    color: #7b7a94;
+    letter-spacing: .04em;
+}
+
+.tab-detach {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0;
+    transition: all .2s cubic-bezier(.34, 1.56, .64, 1);
+    padding: 0;
+    margin-left: 2px;
+}
+.tab-detach svg {
+    width: 12px;
+    height: 12px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    transition: transform .2s;
+}
+.tab:hover .tab-detach, .tab.active .tab-detach { opacity: .45; }
+.tab-detach:hover {
+    background: rgba(90, 214, 192, .15);
+    opacity: 1;
+    color: #5ad6c0;
+}
+.tab-detach:hover svg {
+    transform: scale(1.15) translateY(-1px);
+}
+input.tab-rename-input,
+.tab .tab-rename-input,
+.tab-rename-input {
+    flex: 1;
+    min-width: 0;
+    width: 80px;
+    max-width: 120px;
+    height: 18px;
+    padding: 0 4px;
+    margin: 0;
+    border: 1px solid var(--frame-line) !important;
+    border-radius: 4px !important;
+    background: var(--frame-bg) !important;
+    background-color: var(--frame-bg) !important;
+    background-image: none !important;
+    color: var(--title) !important;
+    font: 500 11px "Cascadia Mono", Consolas, monospace !important;
+    outline: none !important;
+    box-shadow: none !important;
+    caret-color: var(--title) !important;
+    user-select: text !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    line-height: 16px !important;
+    vertical-align: middle;
+    text-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+input.tab-rename-input:focus,
+.tab-rename-input:focus {
+    border-color: var(--title) !important;
+    background: var(--frame-bg) !important;
+    background-color: var(--frame-bg) !important;
+    color: var(--title) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--title) 30%, transparent) !important;
+}
+
+.tab-rename-input::selection {
+    background: color-mix(in srgb, var(--title) 30%, transparent) !important;
+    color: #ffffff !important;
 }

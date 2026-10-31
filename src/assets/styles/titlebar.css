@@ -50,6 +50,7 @@
     display: flex;
     gap: 11px;
     -webkit-app-region: no-drag;
+    align-items: center;
 }
 
 .pin { background: rgba(255, 255, 255, .15); }
@@ -61,3 +62,96 @@
 
 #btn-settings { background: var(--title); }
 #btn-settings:hover { background: #fff; }
+
+#btn-sessions {
+    position: relative;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #7b7a94;
+    border: none;
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+    transition: background .2s, transform .2s;
+    padding: 0;
+}
+#btn-sessions:hover {
+    background: #c0bcc8;
+    transform: scale(1.15);
+}
+#btn-sessions:active {
+    transform: scale(.9);
+}
+
+.badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff5f57;
+    color: #fff;
+    font: 700 9px "Cascadia Mono", Consolas, monospace;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,.6);
+    transition: opacity .2s, transform .2s;
+    opacity: 1;
+    transform: scale(1);
+}
+.badge.hidden {
+    opacity: 0;
+    transform: scale(0);
+}
+
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 9999;
+    pointer-events: none;
+}
+.toast {
+    background: var(--win-bg);
+    border: 1px solid var(--frame-line);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font: 500 12px "Cascadia Mono", Consolas, monospace;
+    box-shadow: 0 8px 24px rgba(0,0,0,.6);
+    backdrop-filter: blur(12px);
+    animation: toastIn .3s cubic-bezier(.34, 1.56, .64, 1) forwards;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.toast.hiding {
+    animation: toastOut .3s ease forwards;
+}
+@keyframes toastIn {
+    from { opacity: 0; transform: translateY(20px) scale(.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes toastOut {
+    from { opacity: 1; transform: translateY(0) scale(1); }
+    to { opacity: 0; transform: translateY(20px) scale(.9); }
+}
+.toast-btn {
+    background: rgba(255,255,255,.15);
+    border: none;
+    color: var(--title);
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font: 600 11px "Cascadia Mono", Consolas, monospace;
+    transition: background .2s;
+}
+.toast-btn:hover { background: rgba(255,255,255,.25); }
